@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-mib-obsidian-950 text-mib-silver-200 antialiased selection:bg-mib-cyan-500/30 selection:text-mib-cyan-300;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Custom classified terminal scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #07090e;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #212631;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3c4558;
+  }
+}
+
+@layer components {
+  /* Classified Card with corner crosshairs */
+  .mib-classified-card {
+    @apply relative border border-mib-charcoal-700/80 bg-mib-obsidian-900/90 backdrop-blur-md rounded-xl shadow-2xl;
+  }
+
+  .mib-classified-card::before,
+  .mib-classified-card::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-color: rgba(69, 243, 255, 0.4);
+    pointer-events: none;
+  }
+
+  .mib-classified-card::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid;
+    border-left: 2px solid;
+  }
+
+  .mib-classified-card::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+  }
+
+  /* Intelligence Terminal scanline overlay */
+  .mib-scanlines {
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+  }
+
+  /* Classified Top Secret diagonal ribbon or watermark */
+  .mib-watermark {
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+    letter-spacing: 0.35em;
+    font-weight: 900;
+    text-transform: uppercase;
+    opacity: 0.04;
+    white-space: nowrap;
+    z-index: 0;
+  }
+
+  /* Terminal glowing text */
+  .mib-glow-cyan {
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
+  }
+
+  .mib-glow-emerald {
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.45);
+  }
+
+  .mib-glow-amber {
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+  }
+
+  .mib-glow-crimson {
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.55);
+  }
+}
+
+/* Reduced motion compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
