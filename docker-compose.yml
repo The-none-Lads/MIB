@@ -1,0 +1,70 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mib_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mib_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mib_secret_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-mib_db}
+    volumes:
+      - mib_postgres_data:/var/lib/postgresql/data
+    networks:
+      - mib_internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mib_user} -d ${POSTGRES_DB:-mib_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mib_backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-mib_user}:${POSTGRES_PASSWORD:-mib_secret_pass}@db:5432/${POSTGRES_DB:-mib_db}
+      SECRET_KEY: ${SECRET_KEY:-default_insecure_key_change_in_production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-["https://mib.gameserver1.cc","http://localhost:5173","http://localhost:80"]}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - mib_uploads_data:/app/uploads
+    networks:
+      - mib_internal
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mib_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - mib_internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+networks:
+  mib_internal:
+    driver: bridge
+
+volumes:
+  mib_postgres_data:
+  mib_uploads_data:
